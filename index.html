@@ -745,6 +745,10 @@ function buildGrpFilter(){
 // ── INIT ──────────────────────────────────────────────────────────────────────
 function init(){
   loadLocal();
+  localStorage.setItem('fb26cfg', JSON.stringify({
+    url: "https://album-mundial-2026-366d5-default-rtdb.firebaseio.com/",
+    key: "AIzaSyBhllTSMM3YzGwKhmdwIWKBq_eCbljkakA"
+  }));
   try{const fc=localStorage.getItem('fb26cfg');if(fc){fbConfig=JSON.parse(fc);fbConnected=true;document.getElementById('fb-url').value=fbConfig.url;if(fbConfig.key) document.getElementById('fb-key').value=fbConfig.key;setFBStatus('Reconectado automáticamente — JF, P, JP y JA sincronizados','ok');document.getElementById('sync-dot').style.background='var(--green)';loadFB().then(()=>startFBPoll());}}catch(e){}
   buildGrpFilter();buildGrid();updateStats();
 
