@@ -133,7 +133,6 @@ header{
   font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;
   padding:3px 8px;border-radius:4px;letter-spacing:0.3px;
 }
-.tag-dup{background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.25)}
 .tag-miss{background:rgba(255,255,255,0.04);color:var(--text2);border:1px solid var(--border)}
 .copy-btn{
   margin-top:10px;padding:6px 14px;font-size:12px;
@@ -643,7 +642,7 @@ function updateTeamBar(code){
 }
 function updateStats(){
   let own=0;
-  for(const code in ALBUM){const t=ALBUM[code];for(let i=1;i<=t.total;i++){const c=getCount(code,i);if(c>=1)own++;if(c>=2)dup++;}}
+  for(const code in ALBUM){const t=ALBUM[code];for(let i=1;i<=t.total;i++){const c=getCount(code,i);if(c>=1)own++;}}
   const mis=TOTAL-own,pct=Math.round(own/TOTAL*100);
   document.getElementById('s-own').textContent=own;
   document.getElementById('s-mis').textContent=mis;
