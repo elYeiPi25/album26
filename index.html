@@ -257,16 +257,9 @@ header{
 .stk.owned{background:rgba(29,185,84,0.15);border-color:rgba(29,185,84,0.35)}
 .stk.owned .stk-num{color:#4ade80}
 .stk.owned .stk-lbl{color:rgba(74,222,128,0.7)}
-.stk.dup{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.35)}
-.stk.dup .stk-num{color:var(--amber)}
-.stk.dup .stk-lbl{color:rgba(245,158,11,0.7)}
+
 .stk.foil{border-style:dashed}
-.stk-badge{
-  position:absolute;top:-5px;right:-5px;
-  background:var(--amber);color:var(--navy);
-  font-size:8px;width:16px;height:16px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-weight:700;
-}
+
 /* ── LEGEND ── */
 .tc-legend{
   display:flex;gap:10px;padding:6px 12px 10px;
@@ -277,7 +270,7 @@ header{
 .lg-dot{width:9px;height:9px;border-radius:2px}
 .ld-none{background:var(--navy3);border:1px solid rgba(255,255,255,0.08)}
 .ld-own{background:rgba(29,185,84,0.2);border:1px solid rgba(29,185,84,0.35)}
-.ld-dup{background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.35)}
+
 .tc-tip{font-size:10px;color:var(--text3);margin-left:auto;font-style:italic}
 
 .empty{
@@ -340,15 +333,11 @@ header{
       <div class="hero-bar"><div class="hero-bar-fill" id="hero-fill" style="width:0%"></div></div>
       <div class="hero-stats">
         <div class="hstat"><div class="hstat-n g" id="s-own">0</div><div class="hstat-l">tengo</div></div>
-        <div class="hstat"><div class="hstat-n a" id="s-dup">0</div><div class="hstat-l">repetidas</div></div>
         <div class="hstat"><div class="hstat-n b" id="s-mis">980</div><div class="hstat-l">faltan</div></div>
       </div>
     </div>
     <div class="hero-actions">
-      <button class="act-pill" id="btn-dup">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        Ver repetidas
-      </button>
+
       <button class="act-pill" id="btn-mis">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
         Ver faltantes
@@ -361,11 +350,7 @@ header{
   </div>
 
   <!-- PANELS -->
-  <div class="panel" id="panel-dup">
-    <div class="panel-title">Estampas repetidas — lista para intercambio</div>
-    <div class="tag-wrap" id="dup-tags"></div>
-    <button class="copy-btn" id="copy-dup">Copiar lista para WhatsApp</button>
-  </div>
+
   <div class="panel" id="panel-mis">
     <div class="panel-title">Estampas que me faltan</div>
     <div class="tag-wrap" id="mis-tags"></div>
@@ -584,12 +569,11 @@ function setCount(code,n,v){
   saveLocal();
   syncFB();
   updateStats();
-  if(document.getElementById('panel-dup').classList.contains('show')) renderDups();
   if(document.getElementById('panel-mis').classList.contains('show')) renderMiss();
 }
 function cycle(code,n){
   const c=getCount(code,n);
-  setCount(code,n,c>=3?0:c+1);
+  setCount(code,n,c>=1?0:1);
   const el=document.querySelector(`.stk[data-c="${code}"][data-n="${n}"]`);
   if(el) paintStk(el,code,n);
   updateTeamBar(code);
@@ -643,10 +627,8 @@ function setFBStatus(msg,cls){
 function paintStk(el,code,n){
   const c=getCount(code,n);
   const isFoil=ALBUM[code].foil.includes(n);
-  el.className=`stk ${c===0?'none':c===1?'owned':'dup'}${isFoil?' foil':''}`;
-  const b=el.querySelector('.stk-badge');
-  if(c>=2){if(!b){const bd=document.createElement('div');bd.className='stk-badge';bd.textContent=c;el.insertBefore(bd,el.firstChild);}else b.textContent=c;}
-  else if(b) b.remove();
+  el.className=`stk ${c===0?'none':'owned'}${isFoil?' foil':''}`;
+
 }
 function updateTeamBar(code){
   const t=ALBUM[code];let owned=0;
@@ -660,23 +642,17 @@ function updateTeamBar(code){
   if(card) card.className='team-card'+(pct===100?' complete':'');
 }
 function updateStats(){
-  let own=0,dup=0;
+  let own=0;
   for(const code in ALBUM){const t=ALBUM[code];for(let i=1;i<=t.total;i++){const c=getCount(code,i);if(c>=1)own++;if(c>=2)dup++;}}
   const mis=TOTAL-own,pct=Math.round(own/TOTAL*100);
   document.getElementById('s-own').textContent=own;
-  document.getElementById('s-dup').textContent=dup;
   document.getElementById('s-mis').textContent=mis;
   document.getElementById('hero-pct').innerHTML=pct+'<span>%</span>';
   document.getElementById('hero-fill').style.width=pct+'%';
   document.getElementById('hero-label').textContent=own+' de '+TOTAL+' estampas coleccionadas';
   document.getElementById('sub-label').textContent=pct+'% completado · '+TOTAL+' estampas · 48 equipos';
 }
-function renderDups(){
-  const tags=document.getElementById('dup-tags');
-  const items=[];
-  for(const code in ALBUM){const t=ALBUM[code];for(let i=1;i<=t.total;i++){const c=getCount(code,i);if(c>=2) for(let x=0;x<c-1;x++) items.push(code+i);}}
-  tags.innerHTML=items.length?items.map(s=>`<span class="tag tag-dup">${s}</span>`).join(''):'<span style="font-size:13px;color:var(--text2)">Sin repetidas aún</span>';
-}
+
 function renderMiss(){
   const tags=document.getElementById('mis-tags');
   const items=[];
@@ -705,8 +681,8 @@ function buildGrid(){
     for(let i=1;i<=t.total;i++){
       const c=getCount(code,i);
       const isFoil=t.foil.includes(i);
-      const cls=`stk ${c===0?'none':c===1?'owned':'dup'}${isFoil?' foil':''}`;
-      const badge=c>=2?`<div class="stk-badge">${c}</div>`:'';
+      const cls=`stk ${c===0?'none':'owned'}${isFoil?' foil':''}`;
+      const badge='';
       const name=(t.p&&t.p[i])||(''+i);
       const shortName=name.length>10?name.substring(0,9)+'…':name;
       stks.push(`<div class="${cls}" data-c="${code}" data-n="${i}" title="${code+i} · ${name}" aria-label="${name}">${badge}<div class="stk-num">${i}</div><div class="stk-lbl">${shortName}</div></div>`);
@@ -724,8 +700,7 @@ function buildGrid(){
       <div class="tc-legend">
         <div class="lg-item"><div class="lg-dot ld-none"></div>falta</div>
         <div class="lg-item"><div class="lg-dot ld-own"></div>tengo</div>
-        <div class="lg-item"><div class="lg-dot ld-dup"></div>repetida</div>
-        <div class="tc-tip">1 toque=tengo · 2=repetida · 3+=más · 4=quitar</div>
+        <div class="tc-tip">toca para marcar · toca de nuevo para quitar</div>
       </div>
     </div>`;
   }).join('');
@@ -745,10 +720,7 @@ function buildGrpFilter(){
 // ── INIT ──────────────────────────────────────────────────────────────────────
 function init(){
   loadLocal();
-  localStorage.setItem('fb26cfg', JSON.stringify({
-    url: "https://album-mundial-2026-366d5-default-rtdb.firebaseio.com/",
-    key: "AIzaSyBhllTSMM3YzGwKhmdwIWKBq_eCbljkakA"
-  }));
+  localStorage.setItem('fb26cfg', JSON.stringify({url:"https://album-mundial-2026-366d5-default-rtdb.firebaseio.com/",key:"AIzaSyBhllTSMM3YzGwKhmdwIWKBq_eCbljkakA"}));
   try{const fc=localStorage.getItem('fb26cfg');if(fc){fbConfig=JSON.parse(fc);fbConnected=true;document.getElementById('fb-url').value=fbConfig.url;if(fbConfig.key) document.getElementById('fb-key').value=fbConfig.key;setFBStatus('Reconectado automáticamente — JF, P, JP y JA sincronizados','ok');document.getElementById('sync-dot').style.background='var(--green)';loadFB().then(()=>startFBPoll());}}catch(e){}
   buildGrpFilter();buildGrid();updateStats();
 
@@ -762,17 +734,11 @@ function init(){
     };
   });
   // Panels
-  document.getElementById('btn-dup').onclick=()=>{
-    const p=document.getElementById('panel-dup');p.classList.toggle('show');if(p.classList.contains('show')) renderDups();
-  };
+
   document.getElementById('btn-mis').onclick=()=>{
     const p=document.getElementById('panel-mis');p.classList.toggle('show');if(p.classList.contains('show')) renderMiss();
   };
-  document.getElementById('copy-dup').onclick=()=>{
-    const items=[];for(const code in ALBUM){const t=ALBUM[code];for(let i=1;i<=t.total;i++){const c=getCount(code,i);if(c>=2) for(let x=0;x<c-1;x++) items.push(code+i);}}
-    navigator.clipboard.writeText('Repetidas que tenemos: '+items.join(', ')).catch(()=>{});
-    document.getElementById('copy-dup').textContent='Copiado ✓';setTimeout(()=>{document.getElementById('copy-dup').textContent='Copiar lista para WhatsApp';},2000);
-  };
+
   document.getElementById('copy-mis').onclick=()=>{
     const items=[];for(const code in ALBUM){const t=ALBUM[code];for(let i=1;i<=t.total;i++) if(getCount(code,i)===0) items.push(code+i);}
     navigator.clipboard.writeText('Nos faltan: '+items.join(', ')).catch(()=>{});
